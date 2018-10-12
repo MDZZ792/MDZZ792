@@ -1,19 +1,30 @@
 package com.test;
 
 import com.google.inject.servlet.GuiceFilter;
-import com.test.Prometheus.Client.JettyStatisticsCollector;
 import com.test.guice.InitializeGuiceModulesContextListener;
+import io.prometheus.client.exporter.HTTPServer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.StatisticsHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 
 import javax.servlet.DispatcherType;
+import java.io.IOException;
 import java.util.EnumSet;
 
 public class JettyRunner {
 
     private static Server server;
+    private static StatisticsHandler stats;
+
+    //该静态块只为将9100端口暴露给prometheus，以便拉取数据。
+    static {
+        try {
+            new HTTPServer(9100);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static void main(String[] args) throws Exception {
         new JettyRunner().run();
@@ -22,19 +33,22 @@ public class JettyRunner {
     private void run() throws Exception{
         createServer();
         bindGuiceContextToServer();
+        //prometheus收集jetty数据
+//        Collect();
         startServer();
         waitForServerToFinnish();
+
     }
 
     private void bindGuiceContextToServer() {
         ServletContextHandler context = createRootContext();
         serveGuiceContext(context);
         // Configure StatisticsHandler.
-        StatisticsHandler stats = new StatisticsHandler();
+        stats = new StatisticsHandler();
         stats.setHandler(server.getHandler());
         server.setHandler(stats);
         // Register collector.注册普罗米修斯库
-        new JettyStatisticsCollector(stats).register();
+//        new JettyStatisticsCollector(stats).register();
 
     }
 
@@ -52,8 +66,9 @@ public class JettyRunner {
     }
 
     private void bindGuiceContextAndFilter(ServletContextHandler context) {
-        //加载普罗米修斯库的监听
+        //加载监听
         context.addEventListener(new InitializeGuiceModulesContextListener());
+        //加载过滤器
         context.addFilter(GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
     }
 
@@ -67,6 +82,10 @@ public class JettyRunner {
     private void waitForServerToFinnish() throws InterruptedException {
         server.join();
     }
+
+//    private void Collect(){
+//        new JettyStatisticsCollector(stats).collect();
+//    }
 
     private void startServer() throws Exception {
         server.start();

@@ -19,6 +19,7 @@ public class JettyStatisticsCollector extends Collector {
 
 
     public List<MetricFamilySamples> collect() {
+        System.out.println("Collect Start...");
         return Arrays.asList(
                 buildCounter("jetty_requests_total", "Number of requests", statisticsHandler.getRequests()),
                 buildGauge("jetty_requests_active", "Number of requests currently active", statisticsHandler.getRequestsActive()),

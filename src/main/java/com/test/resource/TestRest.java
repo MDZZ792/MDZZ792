@@ -3,14 +3,19 @@ package com.test.resource;
 import com.test.Dao.ESDao;
 import com.test.Service.InfluxdbService;
 import com.test.Service.TestService;
+import io.prometheus.client.Gauge;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
+import java.util.Random;
 
 @Path("TestRest")
 public class TestRest {
+
+    static final Gauge g = Gauge.build().name("gauge").help("blah").register();
+
     @Inject
     TestService testService;
 
@@ -51,7 +56,7 @@ public class TestRest {
     }
 
     @GET
-    @Path("GetTime")
+    @Path("GetTime1")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public String GetTimeData( @QueryParam("time1") String time1,
@@ -86,6 +91,16 @@ public class TestRest {
     @Consumes(MediaType.APPLICATION_JSON)
     public String GetTime( @QueryParam("t1") String t1,
                            @QueryParam("t2") String t2){
-        return "";
+
+        try {
+            while (true) {
+                Thread.sleep(100);
+                g.set(new Random().nextInt(50));
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return "BOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOM";
+        }
+
     }
 }

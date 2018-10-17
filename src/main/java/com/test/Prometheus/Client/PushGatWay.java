@@ -1,6 +1,6 @@
 package com.test.Prometheus.Client;
 
-import com.test.ReadJSON.MDZZ_job.Bean;
+import com.test.ReadJSON.Bean;
 import io.prometheus.client.*;
 import io.prometheus.client.exporter.PushGateway;
 import net.sf.json.JSONArray;
@@ -199,13 +199,14 @@ public class PushGatWay {
      *   ...
      * ]
      */
-    public static void Z(String z){
+    public static String Z(String z){
         JSONObject jsonObject = JSONObject.fromObject(z);
         String data = jsonObject.getString("data");
         JSONObject jsonObject1 = JSONObject.fromObject(data);
         String resultType = jsonObject1.getString("resultType");
         System.out.println(resultType);
         JSONArray result = jsonObject1.getJSONArray("result");
+        String format = null;
         for(int i=0;i<result.size();i++){
             JSONObject jsonObject2 = JSONObject.fromObject(result.get(i));
             String metric = jsonObject2.getString("metric");
@@ -215,7 +216,7 @@ public class PushGatWay {
                 JSONArray ja = (JSONArray) values.get(j);
                 for(int a=0;a<ja.size();a++){
                     Object o = ja.get(a);
-                    String format;
+
                     if(o.toString().indexOf("E")>-1){
                         Double d = Double.parseDouble(o.toString());
                         format = E(d.toString());
@@ -225,6 +226,7 @@ public class PushGatWay {
                 }
             }
         }
+        return format;
     }
 
     //解决时间为科学计数法

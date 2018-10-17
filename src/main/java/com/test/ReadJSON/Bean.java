@@ -1,4 +1,4 @@
-package com.test.ReadJSON.MDZZ_job;
+package com.test.ReadJSON;
 
 public class Bean {
     private String One_01;
